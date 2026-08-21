@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>AT & Segurança Social Advisor</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <span class="shield-icon">🛡️</span>
+        <div>
+          <h1>Fiscal Advisor</h1>
+          <p class="subtitle">Portugal AT & Seg. Social</p>
+        </div>
+      </div>
+      <div id="health-badge" class="health-badge">--</div>
+    </header>
+
+    <!-- Status Cards Grid -->
+    <div class="status-grid">
+      <div class="status-card">
+        <span class="card-label">Portal das Finanças</span>
+        <div id="at-status" class="card-value status-neutral">A aguardar dados</div>
+      </div>
+      <div class="status-card">
+        <span class="card-label">Segurança Social</span>
+        <div id="ss-status" class="card-value status-neutral">A aguardar dados</div>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="quick-stats">
+      <div class="stat-item">
+        <span class="stat-num" id="total-debts">0,00 €</span>
+        <span class="stat-title">Dívida Total</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num" id="pending-invoices">0</span>
+        <span class="stat-title">Faturas Pendentes</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num" id="deductions-saved">0,00 €</span>
+        <span class="stat-title">Deduções IRS</span>
+      </div>
+    </div>
+
+    <!-- Top Alert or Advice -->
+    <div id="top-advice-box" class="advice-box">
+      <div class="advice-header">
+        <span class="advice-icon">💡</span>
+        <span id="advice-title" class="advice-title">Recomendação Prioritária</span>
+      </div>
+      <p id="advice-desc" class="advice-desc">Navegue pelas páginas do Portal das Finanças ou Segurança Social para carregar o seu extrato automaticamente.</p>
+    </div>
+
+    <!-- Footer Actions -->
+    <footer class="footer">
+      <button id="open-dashboard-btn" class="btn-primary">Abrir Dashboard Completo</button>
+    </footer>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

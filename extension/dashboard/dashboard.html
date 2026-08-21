@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal AT & Segurança Social Advisor — Painel Principal</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <span class="logo-shield">🛡️</span>
+          <div>
+            <h2>PT Tax Advisor</h2>
+            <span class="version-tag">Manifest V3 • Local-First</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="overview">
+          <span class="icon">📊</span> Visão Geral & Saúde
+        </button>
+        <button class="nav-item" data-tab="optimizations">
+          <span class="icon">🚀</span> Como Aumentar Deduções
+        </button>
+        <button class="nav-item" data-tab="efatura">
+          <span class="icon">🧾</span> e-Fatura & Tetos Legais
+        </button>
+        <button class="nav-item" data-tab="seg-social">
+          <span class="icon">🏛️</span> Segurança Social & TI
+        </button>
+        <button class="nav-item" data-tab="debts">
+          <span class="icon">⚠️</span> Dívidas & Prestações
+        </button>
+        <button class="nav-item" data-tab="autonomo-hub">
+          <span class="icon">⚖️</span> Consultor Autónomo (A+)
+        </button>
+        <button class="nav-item" data-tab="deadlines">
+          <span class="icon">📅</span> Calendário de Prazos
+        </button>
+        <button class="nav-item" data-tab="history">
+          <span class="icon">⏱️</span> Histórico de Mudanças
+        </button>
+        <button class="nav-item" data-tab="backup">
+          <span class="icon">💾</span> Backup & Sessões
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sync-status">
+          <span class="pulse-dot"></span>
+          <span id="sync-text">Sincronização Local Ativa</span>
+        </div>
+        <button id="refresh-btn" class="btn-refresh">🔄 Recalcular Parecer</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="topbar">
+        <div>
+          <h1 id="page-title">Visão Geral & Parecer Fiscal</h1>
+          <p class="topbar-subtitle">Monitorização em tempo real do Portal das Finanças e Segurança Social Direta</p>
+        </div>
+        <div class="topbar-actions">
+          <div id="health-score-container" class="score-card">
+            <span class="score-label">Índice de Saúde Fiscal</span>
+            <div class="score-value-row">
+              <span id="health-score-num" class="score-number">100</span>
+              <span class="score-max">/100</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB: Overview -->
+      <section id="tab-overview" class="tab-content active">
+        <!-- Top Metrics Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-header">
+              <span>Situação Fiscal (AT)</span>
+              <span class="badge" id="badge-at-status">Regularizada</span>
+            </div>
+            <div class="metric-body">
+              <h3 id="at-status-title">Sem dívidas ativas</h3>
+              <p id="at-last-sync" class="sync-time">Última leitura: --</p>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span>Situação Contributiva (SS)</span>
+              <span class="badge" id="badge-ss-status">Regularizada</span>
+            </div>
+            <div class="metric-body">
+              <h3 id="ss-status-title">Sem irregularidades</h3>
+              <p id="ss-last-sync" class="sync-time">Última leitura: --</p>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span>Dívida Total Consolidada</span>
+              <span class="icon-warning">⚠️</span>
+            </div>
+            <div class="metric-body">
+              <h3 id="total-debt-amount" class="text-danger">0,00 €</h3>
+              <p class="metric-sub">AT + Segurança Social</p>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span>Deduções e-Fatura Acumuladas</span>
+              <span class="icon-success">💰</span>
+            </div>
+            <div class="metric-body">
+              <h3 id="total-deductions-amount" class="text-success">0,00 €</h3>
+              <p id="potential-remaining-text" class="metric-sub">Margem restante: 0,00 €</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Critical Alerts Panel -->
+        <div id="critical-alerts-container" class="panel alert-panel hidden">
+          <h2 class="panel-title text-danger">⚠️ Alertas de Ação Imediata</h2>
+          <div id="critical-alerts-list" class="alerts-list"></div>
+        </div>
+
+        <!-- High-Impact Opportunities -->
+        <div class="panel">
+          <div class="panel-header-row">
+            <h2>🚀 Principais Oportunidades de Poupança & Optimização</h2>
+            <button class="btn-link" id="view-all-opts-btn">Ver Todas</button>
+          </div>
+          <div id="top-opportunities-list" class="opportunities-list"></div>
+        </div>
+
+        <!-- Next Deadlines Widget -->
+        <div class="panel">
+          <h2>📅 Próximos Prazos e Obrigações Fiscais</h2>
+          <div id="overview-deadlines-list" class="deadlines-grid"></div>
+        </div>
+      </section>
+
+      <!-- TAB: Optimizations -->
+      <section id="tab-optimizations" class="tab-content">
+        <div class="panel">
+          <h2>Como Aumentar Deduções & Reduzir Imposto a Pagar</h2>
+          <p class="panel-desc">Estratégias baseadas no Código do IRS (CIRS), Código dos Regimes Contributivos da Segurança Social e Estatuto dos Benefícios Fiscais (EBF).</p>
+          <div id="full-opportunities-list" class="opportunities-list"></div>
+        </div>
+      </section>
+
+      <!-- TAB: e-Fatura Tracker -->
+      <section id="tab-efatura" class="tab-content">
+        <div class="panel">
+          <div class="panel-header-row">
+            <h2>Monitor de Tetos Legais do e-Fatura</h2>
+            <div id="unvalidated-alert-chip" class="chip chip-warning hidden">0 Faturas Pendentes de Validação</div>
+          </div>
+          <p class="panel-desc">Acompanhe quanto já acumulou em cada categoria e quanto falta gastar com fatura para atingir o reembolso máximo no IRS.</p>
+          
+          <div id="efatura-categories-progress" class="categories-progress-grid"></div>
+        </div>
+      </section>
+
+      <!-- TAB: Seg Social & TI -->
+      <section id="tab-seg-social" class="tab-content">
+        <div class="panel">
+          <h2>Segurança Social — Trabalhador Independente & Quotas</h2>
+          <p class="panel-desc">Simulação de gestão da Base de Incidência Contributiva (variação legal de -25% a +25%) e impacto no IRS e apoios sociais.</p>
+          
+          <div class="ti-simulator-card">
+            <div class="simulator-inputs">
+              <label>Rendimento Médio Trimestral (€):
+                <input type="number" id="sim-income" value="3000" step="100">
+              </label>
+              <label>Tipo de Atividade:
+                <select id="sim-type">
+                  <option value="0.70">Prestação de Serviços (70%)</option>
+                  <option value="0.20">Venda de Mercadorias / Hotelaria (20%)</option>
+                </select>
+              </label>
+            </div>
+            
+            <div class="simulator-results-grid">
+              <div class="sim-option-card">
+                <h4>Opção -25% (Preservar Liquidez)</h4>
+                <p class="sim-val" id="sim-val-minus">0,00 € / mês</p>
+                <span class="sim-note">Ideal se tiver quebras de faturação ou despesas correntes elevadas.</span>
+              </div>
+              <div class="sim-option-card highlight">
+                <h4>Contribuição Base (Padrão)</h4>
+                <p class="sim-val" id="sim-val-base">0,00 € / mês</p>
+                <span class="sim-note">Cálculo direto sobre 70% do rendimento relevante trimestral.</span>
+              </div>
+              <div class="sim-option-card">
+                <h4>Opção +25% (Máx. Proteção & IRS)</h4>
+                <p class="sim-val" id="sim-val-plus">0,00 € / mês</p>
+                <span class="sim-note">Aumenta o valor de futuras baixas, parentalidade, reforma e a dedução no IRS Categoria B.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Debts & Payments -->
+      <section id="tab-debts" class="tab-content">
+        <div class="panel">
+          <h2>Dívidas Fiscais, Execuções & Planos Prestacionais</h2>
+          <p class="panel-desc">Deteta dívidas registadas na AT e SS e referências Multibanco para pagamento voluntário antes de custos judiciais.</p>
+          <div id="debts-table-container"></div>
+        </div>
+      </section>
+
+      <!-- TAB: Consultor Autónomo & Lawyer Intelligence (A+) -->
+      <section id="tab-autonomo-hub" class="tab-content">
+        <div class="panel">
+          <div class="panel-header-row">
+            <h2>⚖️ Central de Inteligência Fiscal do Trabalhador Independente</h2>
+            <div class="chip chip-success">CIRS • CIVA • CRCSPSS • CPPT</div>
+          </div>
+          <p class="panel-desc">Análise profunda e simulações para prestadores de serviços, freelancers e nómadas digitais em Portugal.</p>
+
+          <!-- 1. Legal Tricks & Protections Grid -->
+          <div class="section-subblock">
+            <h3>🌟 Estratégias & Direitos Legais do Autónomo</h3>
+            <div class="tricks-grid">
+              <div class="trick-card">
+                <div class="trick-badge">CIRS Art. 31º, n.º 10</div>
+                <h4>Benefício de Início de Atividade (-50% no 1º Ano)</h4>
+                <p>No 1.º ano fiscal, a matéria coletável do Regime Simplificado é cortada em 50% (coeficiente 0.375!). No 2.º ano beneficia de corte de 25% (coeficiente 0.5625!).</p>
+                <div class="expert-tip">💡 <strong>Dica de Advogado:</strong> Verifique no Anexo B se o benefício está ativo para não pagar IRS a dobrar.</div>
+              </div>
+
+              <div class="trick-card">
+                <div class="trick-badge">CIRS Art. 31º, n.º 13 d)</div>
+                <h4>Dedução de 25% das Despesas de Casa (Home Office)</h4>
+                <p>Se trabalhar a partir de casa sem escritório comercial, 25% da renda, luz, água, gás e internet entram diretamente nas despesas justificadas da atividade.</p>
+                <div class="expert-tip">💡 <strong>Dica de Advogado:</strong> Associe 25% das faturas de telecomunicações e energia com o seu NIF no e-Fatura.</div>
+              </div>
+
+              <div class="trick-card">
+                <div class="trick-badge">CIRS Art. 102º</div>
+                <h4>Armadilha dos Pagamentos por Conta (PPC) & Clientes Estrangeiros</h4>
+                <p>Ao faturar a empresas estrangeiras, não há retenção na fonte. No ano seguinte, a AT emitirá 3 Pagamentos por Conta pesados em Julho, Setembro e Dezembro.</p>
+                <div class="expert-tip">💡 <strong>Regra de Ouro:</strong> Crie uma conta poupança e provisione 25% a 30% de cada fatura recebida.</div>
+              </div>
+
+              <div class="trick-card">
+                <div class="trick-badge">CRCSPSS Art. 163º</div>
+                <h4>O Truque Legal da Parentalidade & Baixa na SS (+25%)</h4>
+                <p>O Subsídio de Parentalidade e a Baixa Médica são calculados sobre a base contributiva dos últimos 6 meses. Subir +25% no trimestre anterior maximiza o valor pago pela SS.</p>
+                <div class="expert-tip">💡 <strong>Dica Estratégica:</strong> Suba para +25% 6 meses antes da licença planeada.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. International Invoicing & VIES Compliance -->
+          <div class="section-subblock mt-m">
+            <h3>🌍 Guia de Faturação Internacional & Isenção de IVA (CIVA Art. 6º)</h3>
+            <div class="vies-table-card">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Destinatário</th>
+                    <th>Taxa IVA</th>
+                    <th>Menção Obrigatória na Fatura-Recibo</th>
+                    <th>Obrigação Declarativa Obrigatória</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Empresas da União Europeia (B2B VIES)</strong></td>
+                    <td><span class="badge badge-success">0% (Isento)</span></td>
+                    <td><code>Autoliquidação - Artigo 6.º, n.º 6, alínea a) do CIVA</code></td>
+                    <td>🚨 <strong>OBRIGATÓRIO:</strong> Declaração Recapitulativa VIES no Portal das Finanças até ao dia 20.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Clientes Fora da UE (EUA, UK, Suíça, etc.)</strong></td>
+                    <td><span class="badge badge-success">0% (Fora do campo)</span></td>
+                    <td><code>IVA - Autoliquidação [Regras de Localização - Artigo 6.º, n.º 6, a) CIVA]</code></td>
+                    <td>Incluir no Campo 8 do Quadro 06 da Declaração Periódica de IVA.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Clientes Nacionais / Particulares (B2C)</strong></td>
+                    <td><span class="badge badge-warning">23% (Normal)</span></td>
+                    <td><code>IVA à taxa legal de 23% liquidado</code></td>
+                    <td>Declaração Periódica de IVA + Guia de Pagamento até ao dia 25.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 3. Company Transition Simulator -->
+          <div class="section-subblock mt-m">
+            <h3>🏢 Simulador de Transição: Quando Compensar Abrir Sociedade Unipessoal?</h3>
+            <div class="company-transition-box">
+              <div class="sim-row">
+                <div class="sim-col">
+                  <label>Faturação Bruta Anual Prevista (€):</label>
+                  <input type="number" id="company-sim-gross" value="51388" step="1000">
+                </div>
+                <div class="sim-col">
+                  <button id="calc-company-sim-btn" class="btn-primary">Comparar Tributação</button>
+                </div>
+              </div>
+              <div id="company-comparison-results" class="comparison-results-grid"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Deadlines -->
+      <section id="tab-deadlines" class="tab-content">
+        <div class="panel">
+          <h2>Calendário Fiscal Anual & Prazos Estatutários</h2>
+          <div id="full-deadlines-list" class="deadlines-table-container"></div>
+        </div>
+      </section>
+
+      <!-- TAB: History -->
+      <section id="tab-history" class="tab-content">
+        <div class="panel">
+          <h2>Registo Temporal de Alterações (Time Series Diff)</h2>
+          <p class="panel-desc">Auditoria contínua de quando dívidas surgiram, declarações foram entregues ou estados mudaram.</p>
+          <div id="history-timeline-list" class="timeline-list"></div>
+        </div>
+      </section>
+
+      <!-- TAB: Backup & Ingestion -->
+      <section id="tab-backup" class="tab-content">
+        <div class="panel">
+          <h2>Importação & Exportação de Dados Locais</h2>
+          <p class="panel-desc">Todos os dados residem apenas no seu computador. Pode exportar snapshots ou importar backups de sessões/cookies para análise imediata.</p>
+          
+          <div class="backup-actions-grid">
+            <div class="backup-box">
+              <h3>Exportar Dados Locais</h3>
+              <p>Descarrega um ficheiro JSON com todos os snapshots e histórico acumulado.</p>
+              <button id="export-json-btn" class="btn-secondary">⬇️ Descarregar Backup JSON</button>
+            </div>
+            <div class="backup-box">
+              <h3>Importar Backup / Snapshot</h3>
+              <p>Restaura ou alimenta o advisor com ficheiros de cookies/dados exportados.</p>
+              <input type="file" id="import-file-input" accept=".json">
+              <button id="import-btn" class="btn-secondary">⬆️ Importar e Analisar</button>
+            </div>
+            <div class="backup-box danger-box">
+              <h3>Limpar Base de Dados Local</h3>
+              <p>Elimina todos os registos locais armazenados pela extensão.</p>
+              <button id="clear-db-btn" class="btn-danger">🗑️ Limpar Todos os Dados</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="dashboard.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+{
+  "extractedAt": "2026-08-21T12:00:00.000Z",
+  "profile": {
+    "name": "Contribuinte Exemplo",
+    "niss": "00000000000",
+    "nif": "999999990",
+    "citizen": true
+  },
+  "contactos": {
+    "email": "exemplo@contribuinte.pt",
+    "emailVerificado": true,
+    "telemovel": null,
+    "estadoTelemovel": "Não registado"
+  },
+  "contaBancaria": {
+    "temIbanAtivo": true,
+    "status": "Ativo"
+  },
+  "at": {
+    "situacaoFiscal": "Regularizada",
+    "dividas": { "total": 0, "processos": [] },
+    "regimeSimplificado": {
+      "rendimentoServicos": 60000.00,
+      "despesasAtividade": 2500.00,
+      "contribuicoesSS": 7200.00
+    }
+  },
+  "situacaoContributiva": {
+    "estado": "Regularizada",
+    "dataApuramento": "2026-08-01",
+    "numeroDeclaracao": "DEMO-0000000000",
+    "validadeMeses": 4,
+    "validadeAte": "2026-12-01"
+  },
+  "posicaoAtual": {
+    "valoresReceber": 0.0,
+    "valoresDevolver": 0.0,
+    "contribuicoesCorrentesAPagar": 0.0,
+    "contribuicoesEmAtraso": 0.0,
+    "coimasECustas": 0.0,
+    "dividaEmExecucaoFiscal": 0.0,
+    "ultimoPagamentoLiquidado": null
+  },
+  "trabalhadorIndependente": {
+    "ativo": true,
+    "periodoVigente": "3.º Trimestre 2026",
+    "rendimentoRelevanteTrimestral": 10500.0,
+    "baseIncidenciaMensal": 3500.0,
+    "taxaContributiva": 21.4,
+    "mensalidadePrevista": 749.0,
+    "baseLegal": "Art. 162.º e 163.º do CRCSPSS",
+    "opcoesProximaDeclaracao": {
+      "opcaoMenos25PorCento": {
+        "baseMensal": 2625.0,
+        "mensalidade": 561.75,
+        "vantagem": "Alívio de liquidez e poupança imediata de tesouraria de 187,25 €/mês."
+      },
+      "opcaoNormal": {
+        "baseMensal": 3500.0,
+        "mensalidade": 749.0,
+        "vantagem": "Manutenção do escalão base correspondente ao rendimento relevante."
+      },
+      "opcaoMais25PorCento": {
+        "baseMensal": 4375.0,
+        "mensalidade": 936.25,
+        "vantagem": "Reforço de direitos de proteção social (parentalidade, doença, reforma) e 100% dedutível no IRS Anexo B."
+      }
+    }
+  },
+  "execucaoFiscal": null,
+  "carreiraContributiva": {
+    "totalAnosComRegistos": 0,
+    "anos": []
+  },
+  "efatura": {
+    "faturasPendentes": 0,
+    "categorias": {
+      "despesasGerais": 250.0,
+      "saude": 350.0,
+      "educacao": 180.0,
+      "habitacao": 600.0,
+      "lares": 0.0,
+      "ivaBeneficio": 140.0
+    }
+  }
+}

@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment & Secrets
+.env
+.env.*
+*.env
+*.pem
+*.key
+
+# Session Cookies & Sensitive Credentials
+cookies.txt
+ss_cookies.txt
+*cookies*.txt
+*cookies*.json
+*.cookies
+
+# Personal Crawled Data & Raw HTML/TXT Dumps
+crawled_data/
+*.html
+!extension/**/*.html
+!standalone/**/*.html
+!report_template.html
+*.txt
+!extension/**/*.txt
+!README.md
+ss_*.json
+ss_*.js
+*.log
+data/*.db
+data/latest_report.json
+pt-autonomo-api/data/*.db
+
+# Personal Dossiers & Private Documents
+AIMA_DOSSIER_*
+*DOSSIER*
+
+# OS Files
+.DS_Store
+Thumbs.db

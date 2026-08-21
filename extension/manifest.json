@@ -1,0 +1,70 @@
+{
+  "manifest_version": 3,
+  "name": "Personal AT & Segurança Social Advisor",
+  "version": "1.0.0",
+  "description": "Automated, local-first advisor for Portal das Finanças (AT), e-Fatura, and Segurança Social Direta. Optimizes deductions, tracks debts, and provides proactive financial advice.",
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications",
+    "tabs",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://*.portaldasfinancas.gov.pt/*",
+    "https://*.financas.gov.pt/*",
+    "https://*.seg-social.pt/*"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "AT & Seg Social Advisor",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.portaldasfinancas.gov.pt/*",
+        "https://*.financas.gov.pt/*"
+      ],
+      "exclude_matches": [
+        "https://faturas.portaldasfinancas.gov.pt/*"
+      ],
+      "js": ["content-scripts/at-financas.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://faturas.portaldasfinancas.gov.pt/*"
+      ],
+      "js": ["content-scripts/efatura.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.seg-social.pt/*",
+        "https://app.seg-social.pt/*"
+      ],
+      "js": ["content-scripts/seg-social.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["dashboard/dashboard.html", "icons/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

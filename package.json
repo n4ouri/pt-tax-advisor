@@ -1,0 +1,13 @@
+{
+  "name": "pt-tax-advisor",
+  "version": "1.0.0",
+  "description": "Portuguese Tax & Social Security Advisor for Independent Workers",
+  "type": "module",
+  "main": "cli/index.js",
+  "scripts": {
+    "start": "node crawl_all.mjs",
+    "crawl": "node crawl_all.mjs",
+    "advisor": "node cli/index.js",
+    "snapshot": "node generate_snapshot.mjs"
+  }
+}
