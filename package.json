@@ -1,9 +1,22 @@
 {
-  "name": "pt-tax-advisor",
+  "name": "tax-verde",
   "version": "1.0.0",
-  "description": "Portuguese Tax & Social Security Advisor for Independent Workers",
+  "description": "TaxVerde (AutonomoPT) — Local-first Portuguese Tax & Social Security Copilot for Freelancers, Autónomos (Recibos Verdes), and ENI.",
   "type": "module",
   "main": "cli/index.js",
+  "keywords": [
+    "tax-verde",
+    "autonomo-pt",
+    "portugal-tax",
+    "recibos-verdes",
+    "trabalhador-independente",
+    "seguranca-social",
+    "portal-das-financas",
+    "efatura",
+    "irs-portugal",
+    "vies-vat",
+    "digital-nomad-portugal"
+  ],
   "scripts": {
     "start": "node crawl_all.mjs",
     "crawl": "node crawl_all.mjs",

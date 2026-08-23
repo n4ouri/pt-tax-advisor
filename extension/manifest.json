@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Personal AT & Segurança Social Advisor",
+  "name": "TaxVerde — Portugal Tax & Seg Social Copilot",
   "version": "1.0.0",
-  "description": "Automated, local-first advisor for Portal das Finanças (AT), e-Fatura, and Segurança Social Direta. Optimizes deductions, tracks debts, and provides proactive financial advice.",
+  "description": "TaxVerde (AutonomoPT) — Automated, local-first tax advisor for Portal das Finanças (AT), e-Fatura, and Segurança Social Direta.",
   "permissions": [
     "storage",
     "alarms",
