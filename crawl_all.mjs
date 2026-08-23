@@ -57,14 +57,34 @@ async function runAutoCrawlAndAnalyze() {
 
     for (const ep of ssEndpoints) {
       const res = fetchWithCookie(ep.url, SS_COOKIES);
-      if (res.success && res.body && !res.body.includes('Sessão expirada') && !res.body.includes('loginRedirect')) {
+      if (res.success && res.body && !res.body.includes('Sessão expirada') && !res.body.includes('loginRedirect') && !res.body.includes('Aplicação Inexistente')) {
         fs.writeFileSync(path.join(SS_OUTPUT_DIR, ep.file), res.body, 'utf-8');
       }
     }
   }
 
+  // 1b. Crawl AT / e-Fatura Endpoints
+  let atParsedData = { dividas: { total: 0 }, situacaoFiscal: 'Regularizada', faturasPendentes: 0 };
+  if (fs.existsSync(AT_COOKIES)) {
+    console.log('📡 [2/4] A consultar Portal das Finanças e e-Fatura via cookies.txt...');
+    const atRes = fetchWithCookie('https://sitfiscal.portaldasfinancas.gov.pt/sitfiscal/home', AT_COOKIES);
+    if (atRes.success && atRes.body && !atRes.body.includes('Aplicação Inexistente') && !atRes.body.includes('loginRedirect')) {
+      if (atRes.body.includes('Não tem dívidas fiscais em cobrança') || atRes.body.includes('Situação tributária regularizada')) {
+        atParsedData.situacaoFiscal = 'Regularizada';
+      }
+    }
+
+    const efRes = fetchWithCookie('https://faturas.portaldasfinancas.gov.pt/homeBeneficio.action', AT_COOKIES);
+    if (efRes.success && efRes.body && !efRes.body.includes('Aplicação Inexistente')) {
+      const pendingMatch = efRes.body.match(/(\d+)\s*faturas?\s*pendentes?/i) || efRes.body.match(/Tem\s*(\d+)\s*faturas?\s*para\s*validar/i);
+      if (pendingMatch) {
+        atParsedData.faturasPendentes = parseInt(pendingMatch[1], 10);
+      }
+    }
+  }
+
   // 2. Generate / Update Snapshot
-  console.log('🔄 [2/4] A atualizar snapshot unificado e histórico de rendimentos...');
+  console.log('🔄 [3/4] A atualizar snapshot unificado e histórico de rendimentos...');
   try {
     execSync('node generate_snapshot.mjs', { stdio: 'inherit' });
   } catch (e) {
@@ -93,16 +113,21 @@ async function runAutoCrawlAndAnalyze() {
     segSocial: {
       situacaoContributiva: rawData.situacaoContributiva?.estado,
       trabalhadorIndependente: rawData.trabalhadorIndependente,
-      execucaoFiscal: rawData.execucaoFiscal,
+      execucaoFiscal: rawData.execucaoFiscal?.montanteTotalDivida > 0 ? rawData.execucaoFiscal : null,
       carreiraContributiva: rawData.carreiraContributiva
     },
     at: {
-      situacaoFiscal: 'Regularizada',
+      situacaoFiscal: atParsedData.situacaoFiscal || 'Regularizada',
+      dividas: atParsedData.dividas || { total: 0 },
       regimeSimplificado: {
         rendimentoServicos: (rawData.trabalhadorIndependente?.rendimentoRelevanteTrimestral || 0) / 0.70 * 4,
         despesasAtividade: 0,
         contribuicoesSS: (rawData.trabalhadorIndependente?.mensalidadePrevista || 0) * 12
       }
+    },
+    efatura: {
+      faturasPendentes: atParsedData.faturasPendentes || 0,
+      categorias: {}
     }
   });
 

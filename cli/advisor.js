@@ -25,6 +25,29 @@ export const DEDUCTION_CAPS = {
   }
 };
 
+export const DEADLINES_CALENDAR = [
+  { month: 1, day: 31, title: 'Segurança Social - Declaração Trimestral T4', source: 'SS' },
+  { month: 2, day: 15, title: 'e-Fatura - Comunicação de Faturas de Rendas/Contratos', source: 'AT' },
+  { month: 2, day: 25, title: 'e-Fatura - Validação Final de Faturas Pendentes', source: 'AT' },
+  { month: 2, day: 20, title: 'IVA - Declaração Periódica T4 (Trimestral)', source: 'AT' },
+  { month: 3, day: 15, title: 'AT - Reclamação Prévia de Despesas Gerais Familiares', source: 'AT' },
+  { month: 4, day: 1, endMonth: 6, endDay: 30, title: 'IRS - Entrega da Declaração Modelo 3', source: 'AT' },
+  { month: 4, day: 30, title: 'Segurança Social - Declaração Trimestral T1', source: 'SS' },
+  { month: 5, day: 20, title: 'IVA - Declaração Periódica T1 (Trimestral)', source: 'AT' },
+  { month: 5, day: 31, title: 'IMI - 1ª Prestação (ou Pagamento Único se < 100€)', source: 'AT' },
+  { month: 7, day: 20, title: 'IRS - 1.º Pagamento por Conta (PPC - Art. 102º CIRS)', source: 'AT' },
+  { month: 7, day: 31, title: 'Segurança Social - Declaração Trimestral T2', source: 'SS' },
+  { month: 8, day: 20, title: 'IVA - Declaração Periódica T2 (Trimestral)', source: 'AT' },
+  { month: 8, day: 31, title: 'IRS - Prazo Limite para Liquidação / Reembolso pela AT', source: 'AT' },
+  { month: 9, day: 20, title: 'IRS - 2.º Pagamento por Conta (PPC - Art. 102º CIRS)', source: 'AT' },
+  { month: 9, day: 30, title: 'IMI - 2ª Prestação (se aplicável)', source: 'AT' },
+  { month: 10, day: 31, title: 'Segurança Social - Declaração Trimestral T3', source: 'SS' },
+  { month: 11, day: 20, title: 'IVA - Declaração Periódica T3 (Trimestral)', source: 'AT' },
+  { month: 11, day: 30, title: 'IMI - 3ª Prestação (se valor > 500€)', source: 'AT' },
+  { month: 12, day: 20, title: 'IRS - 3.º Pagamento por Conta (PPC - Limitável se imposto coberto)', source: 'AT' },
+  { month: 12, day: 31, title: 'PPR - Prazo Limite para Reforço e Dedução no IRS do Ano', source: 'AT' }
+];
+
 export function runAdvisorAnalysis(data) {
   const recommendations = [];
   const alerts = [];
@@ -41,6 +64,7 @@ export function runAdvisorAnalysis(data) {
 
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
+  const currentDay = now.getDate();
 
   // 1. SEGURANÇA SOCIAL
   if (data?.segSocial) {
@@ -70,7 +94,7 @@ export function runAdvisorAnalysis(data) {
       });
     }
 
-    if (ss.execucaoFiscal) {
+    if (ss.execucaoFiscal && ss.execucaoFiscal.montanteTotalDivida > 0) {
       const ef = ss.execucaoFiscal;
       alerts.push({
         level: 'HIGH',
@@ -195,6 +219,14 @@ export function runAdvisorAnalysis(data) {
     }
   }
 
+  // Upcoming Deadlines Radar
+  const upcomingDeadlines = DEADLINES_CALENDAR.filter(d => {
+    if (d.month === currentMonth && d.day >= currentDay) return true;
+    if (d.month === (currentMonth % 12) + 1 && currentDay >= 15) return true;
+    if (d.endMonth && currentMonth >= d.month && currentMonth <= d.endMonth) return true;
+    return false;
+  });
+
   // Run deep lawyer-grade autonomo analysis
   const autonomoDeep = analyzeAutonomoProfile(data);
 
@@ -206,6 +238,7 @@ export function runAdvisorAnalysis(data) {
     alerts,
     opportunities,
     recommendations,
+    upcomingDeadlines,
     autonomoAnalysis: autonomoDeep
   };
 }

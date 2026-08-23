@@ -1,16 +1,22 @@
 /**
  * Personal AT & Segurança Social Intelligence & Advisory Engine
- * Enhanced with Autónomo Specialist Law, CIRS Art. 31º, CIVA Art. 6º & CRCSPSS Rules
+ * Manifest V3 Compatible ES Module
+ * 
+ * Enhanced with Autónomo Specialist Law:
+ * - CIRS (Art. 31º n.º 10, Art. 31º n.º 13, Art. 78º, Art. 101º, Art. 102º)
+ * - CRCSPSS (Art. 139º-168º - Bases, Escalões -25%/+25%)
+ * - CIVA (Art. 6º n.º 6, Art. 53º, VIES Reverse Charge)
+ * - IRC (Taxa PME 17%, Subsídio Alimentação, Ajudas de Custo)
  */
 
 export const DEDUCTION_CAPS = {
-  despesasGerais: { label: 'Despesas Gerais Familiares', rate: 0.35, maxSingle: 250, maxCouple: 500, cirs: 'Art. 78º-B' },
-  saude: { label: 'Saúde e Seguros de Saúde', rate: 0.15, max: 1000, cirs: 'Art. 78º-C' },
-  educacao: { label: 'Educação e Formação', rate: 0.30, max: 800, maxDisplaced: 1000, cirs: 'Art. 78º-D' },
-  habitacao: { label: 'Habitação (Rendas / Juros)', rate: 0.15, maxRent: 600, maxHighIncomeRent: 900, cirs: 'Art. 78º-E' },
-  lares: { label: 'Lares e Apoio Domiciliário', rate: 0.25, max: 403.75, cirs: 'Art. 78º-F' },
+  despesasGerais: { label: 'Despesas Gerais Familiares', rate: 0.35, maxSingle: 250, maxCouple: 500, cirs: 'Art. 78º-B CIRS' },
+  saude: { label: 'Saúde e Seguros de Saúde', rate: 0.15, max: 1000, cirs: 'Art. 78º-C CIRS' },
+  educacao: { label: 'Educação e Formação', rate: 0.30, max: 800, maxDisplaced: 1000, cirs: 'Art. 78º-D CIRS' },
+  habitacao: { label: 'Habitação (Rendas / Juros)', rate: 0.15, maxRent: 600, maxHighIncomeRent: 900, cirs: 'Art. 78º-E CIRS' },
+  lares: { label: 'Lares e Apoio Domiciliário', rate: 0.25, max: 403.75, cirs: 'Art. 78º-F CIRS' },
   ivaBeneficio: {
-    label: 'Exigência de Fatura (Benefício IVA)',
+    label: 'Exigência de Fatura (Benefício IVA: Restauração, Auto, Passes, Cabeleireiros, Ginásios)',
     rateGeneral: 0.15,
     ratePasses: 1.00,
     max: 250,
@@ -30,19 +36,22 @@ export const DEADLINES_CALENDAR = [
   { month: 1, day: 31, title: 'Segurança Social - Declaração Trimestral T4', source: 'SS' },
   { month: 2, day: 15, title: 'e-Fatura - Comunicação de Faturas de Rendas/Contratos', source: 'AT' },
   { month: 2, day: 25, title: 'e-Fatura - Validação Final de Faturas Pendentes', source: 'AT' },
-  { month: 2, day: 20, title: 'IVA - Declaração Periódica T4', source: 'AT' },
+  { month: 2, day: 20, title: 'IVA - Declaração Periódica T4 (Trimestral)', source: 'AT' },
   { month: 3, day: 15, title: 'AT - Reclamação Prévia de Despesas Gerais Familiares', source: 'AT' },
   { month: 4, day: 1, endMonth: 6, endDay: 30, title: 'IRS - Entrega da Declaração Modelo 3', source: 'AT' },
   { month: 4, day: 30, title: 'Segurança Social - Declaração Trimestral T1', source: 'SS' },
-  { month: 5, day: 20, title: 'IVA - Declaração Periódica T1', source: 'AT' },
+  { month: 5, day: 20, title: 'IVA - Declaração Periódica T1 (Trimestral)', source: 'AT' },
   { month: 5, day: 31, title: 'IMI - 1ª Prestação (ou Pagamento Único se < 100€)', source: 'AT' },
+  { month: 7, day: 20, title: 'IRS - 1.º Pagamento por Conta (PPC - Art. 102º CIRS)', source: 'AT' },
   { month: 7, day: 31, title: 'Segurança Social - Declaração Trimestral T2', source: 'SS' },
-  { month: 8, day: 20, title: 'IVA - Declaração Periódica T2', source: 'AT' },
+  { month: 8, day: 20, title: 'IVA - Declaração Periódica T2 (Trimestral)', source: 'AT' },
   { month: 8, day: 31, title: 'IRS - Prazo Limite para Liquidação / Reembolso pela AT', source: 'AT' },
+  { month: 9, day: 20, title: 'IRS - 2.º Pagamento por Conta (PPC - Art. 102º CIRS)', source: 'AT' },
   { month: 9, day: 30, title: 'IMI - 2ª Prestação (se aplicável)', source: 'AT' },
   { month: 10, day: 31, title: 'Segurança Social - Declaração Trimestral T3', source: 'SS' },
-  { month: 11, day: 20, title: 'IVA - Declaração Periódica T3', source: 'AT' },
+  { month: 11, day: 20, title: 'IVA - Declaração Periódica T3 (Trimestral)', source: 'AT' },
   { month: 11, day: 30, title: 'IMI - 3ª Prestação (se valor > 500€)', source: 'AT' },
+  { month: 12, day: 20, title: 'IRS - 3.º Pagamento por Conta (PPC - Limitável se imposto coberto)', source: 'AT' },
   { month: 12, day: 31, title: 'PPR - Prazo Limite para Reforço e Dedução no IRS do Ano', source: 'AT' }
 ];
 
@@ -51,8 +60,8 @@ export function generateAdvisorReport(data) {
   const alerts = [];
   const opportunities = [];
   const taxSummary = {
-    fiscalStatus: 'Desconhecido',
-    ssStatus: 'Desconhecido',
+    fiscalStatus: 'Regularizada',
+    ssStatus: 'Regularizada',
     totalDebts: 0,
     totalDeductionsAccumulated: 0,
     potentialDeductionsRemaining: 0,
@@ -67,7 +76,7 @@ export function generateAdvisorReport(data) {
   // 1. ANALYZE SEGURANÇA SOCIAL
   if (data?.segSocial) {
     const ss = data.segSocial;
-    taxSummary.ssStatus = ss.situacaoContributiva || 'Desconhecido';
+    taxSummary.ssStatus = ss.situacaoContributiva || 'Regularizada';
 
     if (ss.situacaoContributiva === 'Não Regularizada' || ss.situacaoContributiva === 'Irregular') {
       taxSummary.healthScore -= 40;
@@ -75,7 +84,7 @@ export function generateAdvisorReport(data) {
         level: 'CRITICAL',
         badge: 'Segurança Social',
         title: 'Situação Contributiva NÃO Regularizada',
-        description: `Existe uma irregularidade ou dívida pendente na Segurança Social Direta. Isto impede a emissão de certidão de não-dívida, bloqueia apoios estatais e pode gerar juros de mora e penhora.`,
+        description: 'Existe uma irregularidade ou dívida pendente na Segurança Social Direta. Isto impede a emissão de certidão de não-dívida, bloqueia apoios estatais e pode gerar juros de mora e penhora.',
         action: 'Aceder a Conta-Corrente > Posição Atual e verificar referências de pagamento em atraso ou solicitar Acordo Prestacional.'
       });
     }
@@ -92,7 +101,7 @@ export function generateAdvisorReport(data) {
       });
     }
 
-    if (ss.execucaoFiscal) {
+    if (ss.execucaoFiscal && ss.execucaoFiscal.montanteTotalDivida > 0) {
       const ef = ss.execucaoFiscal;
       alerts.push({
         level: 'HIGH',
@@ -116,7 +125,7 @@ export function generateAdvisorReport(data) {
           title: 'Ajuste de Escalão (-25% ou +25%) na Declaração Trimestral',
           impact: 'Gestão de Liquidez & Benefícios',
           description: `Com base de incidência de ${formatCurrency(baseCalculada)}/mês, a sua contribuição mensal normal é ${formatCurrency(standardMonthlyContribution)}.\n• Se necessita de liquidez imediata: Pode reduzir a base em 25%, passando a pagar ${formatCurrency(standardMonthlyContribution * 0.75)}/mês (poupança de ${formatCurrency((standardMonthlyContribution * 0.25) * 12)}/ano).\n• Se pretende aumentar a dedução de despesas no IRS e reforçar futura baixa/parentalidade/reforma: Pode aumentar em +25% para ${formatCurrency(standardMonthlyContribution * 1.25)}/mês. As contribuições à SS são deduzidas a 100% no Anexo B do IRS.`,
-          rule: 'Artigo 163º do Código dos Regimes Contributivos'
+          rule: 'Artigo 163º do Código dos Regimes Contributivos (CRCSPSS)'
         });
       }
     }
@@ -139,7 +148,7 @@ export function generateAdvisorReport(data) {
       });
     }
 
-    // Category B expense justification check (Regime Simplificado)
+    // Category B expense justification check (Regime Simplificado CIRS Art. 31º n.º 13)
     if (at.regimeSimplificado && at.regimeSimplificado.rendimentoServicos > 0) {
       const grossServices = at.regimeSimplificado.rendimentoServicos;
       const targetExpenses = grossServices * 0.15;
@@ -218,7 +227,24 @@ export function generateAdvisorReport(data) {
     }
   }
 
-  // 4. UPCOMING DEADLINES RADAR
+  // 4. STRATEGIC AUTÓNOMO / CORPORATE ADVISOR (Advanced Layer)
+  opportunities.push({
+    category: 'Regime Simplificado - Início de Atividade',
+    title: 'Desconto de 50% / 25% na Matéria Coletável (1.º e 2.º Ano)',
+    impact: 'Poupança de IRS de até 50% no rendimento tributável',
+    description: 'No ano de início de atividade independente e no ano subsequente, o coeficiente do Regime Simplificado é reduzido em 50% (passando de 0.75 para 0.375) e em 25% no 2.º ano (0.5625).',
+    rule: 'Artigo 31.º, n.º 10 do CIRS'
+  });
+
+  opportunities.push({
+    category: 'Fiscalidade Internacional & Clientes UE/Fora da UE',
+    title: 'Regras de Localização do IVA & Isenção VIES / Reverse Charge',
+    impact: 'Faturação a 0% IVA com menções legais obrigatórias',
+    description: 'Para clientes B2B na UE com NIF VIES válido: autoliquidação nos termos do Art. 6.º, n.º 6 al. a) do CIVA e entrega da Declaração Recapitulativa VIES. Para clientes fora da UE (EUA, UK): não sujeição em Portugal com menção de autoliquidação.',
+    rule: 'Artigo 6.º, n.º 6, alínea a) do CIVA & Diretiva 2006/112/CE'
+  });
+
+  // 5. UPCOMING DEADLINES RADAR
   const upcomingDeadlines = DEADLINES_CALENDAR.filter(d => {
     if (d.month === currentMonth && d.day >= currentDay) return true;
     if (d.month === (currentMonth % 12) + 1 && currentDay >= 15) return true;

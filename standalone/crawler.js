@@ -177,9 +177,8 @@ export class PortalCrawler {
     // Query e-Fatura
     try {
       const efRes = await this.fetchUrl('https://faturas.portaldasfinancas.gov.pt/homeBeneficio.action');
-      if (efRes.body && efRes.body.length > 500) {
-        // Parse e-Fatura HTML
-        const pendingMatch = efRes.body.match(/(\d+)\s*faturas?\s*pendentes?/i);
+      if (efRes.body && efRes.body.length > 200 && !efRes.body.includes('Aplicação Inexistente')) {
+        const pendingMatch = efRes.body.match(/(\d+)\s*faturas?\s*pendentes?/i) || efRes.body.match(/Tem\s*(\d+)\s*faturas?\s*para\s*validar/i);
         if (pendingMatch) {
           state.efatura.faturasPendentes = parseInt(pendingMatch[1], 10);
         }
@@ -191,9 +190,19 @@ export class PortalCrawler {
     // Query Situação Fiscal & Dívidas
     try {
       const sitRes = await this.fetchUrl('https://sitfiscal.portaldasfinancas.gov.pt/sitfiscal/home');
-      if (sitRes.body) {
-        if (sitRes.body.includes('dívida') || sitRes.body.includes('processo')) {
-          // Parse potential debt numbers
+      if (sitRes.body && sitRes.body.length > 200 && !sitRes.body.includes('Aplicação Inexistente')) {
+        if (sitRes.body.includes('Não tem dívidas fiscais em cobrança') || sitRes.body.includes('Situação tributária regularizada')) {
+          state.at.situacaoFiscal = 'Regularizada';
+          state.at.dividas.total = 0;
+        } else {
+          const debtMatch = sitRes.body.match(/Valor em dívida:?\s*([\d\.\,]+)\s*€/i) || sitRes.body.match(/Total em atraso:?\s*([\d\.\,]+)\s*€/i);
+          if (debtMatch) {
+            const num = parseFloat(debtMatch[1].replace(/\./g, '').replace(',', '.'));
+            if (!isNaN(num) && num > 0) {
+              state.at.dividas.total = num;
+              state.at.situacaoFiscal = 'Com Dívida / Não Regularizada';
+            }
+          }
         }
       }
     } catch (err) {
@@ -210,8 +219,10 @@ export class PortalCrawler {
       updatedAt: new Date().toISOString()
     };
 
-    // Persist to local data folder
-    const dataDir = path.resolve(process.cwd(), 'pt-tax-advisor/data');
+    // Persist to local data folder (robust path resolution)
+    const dataDir = fs.existsSync(path.resolve(process.cwd(), 'data')) 
+      ? path.resolve(process.cwd(), 'data') 
+      : path.resolve(process.cwd(), 'pt-tax-advisor/data');
     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
     
     fs.writeFileSync(path.join(dataDir, 'latest_report.json'), JSON.stringify(fullResult, null, 2));

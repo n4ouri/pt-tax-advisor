@@ -2,17 +2,25 @@ import fs from 'fs';
 import path from 'path';
 
 const DIR = path.resolve(process.cwd(), 'crawled_data/seg_social');
+if (!fs.existsSync(DIR)) {
+  fs.mkdirSync(DIR, { recursive: true });
+}
 
-function isValidContent(content) {
-  if (!content) return false;
-  if (content.includes('Serviço de Autenticação da Segurança Social')) return false;
-  if (content.includes('Sessão expirada')) return false;
-  if (content.includes('cas_main_logo_img')) return false;
+export function isValidContent(content) {
+  if (!content || typeof content !== 'string') return false;
+  const trimmed = content.trim();
+  if (trimmed.length < 40) return false;
+  if (trimmed.includes('Aplicação Inexistente') || trimmed.includes('ADC O pedido é inválido')) return false;
+  if (trimmed.includes('cas_main_logo_img') && !trimmed.includes('class="PTSS')) return false;
+  if (trimmed.includes('Serviço de Autenticação da Segurança Social') && !trimmed.includes('class="PTSS')) return false;
+  if (trimmed.includes('Sessão expirada') || trimmed.includes('loginRedirect')) return false;
   return true;
 }
 
-function readFileContent(filename) {
+export function readFileContent(filename) {
   const candidates = [
+    path.join(process.cwd(), `crawled_data/ss_live_${filename}`),
+    path.join(process.cwd(), `crawled_data/${filename}`),
     path.join(process.cwd(), `ss_${filename}`),
     path.join(process.cwd(), filename),
     path.join(DIR, filename),
@@ -27,28 +35,31 @@ function readFileContent(filename) {
     }
   }
 
-  // Fallback to any non-empty content
-  for (const c of candidates) {
-    if (fs.existsSync(c)) {
-      return fs.readFileSync(c, 'utf-8');
-    }
-  }
   return null;
 }
 
-const snapshot = {
-  extractedAt: new Date().toISOString(),
-  profile: {},
-  contactos: {},
-  contaBancaria: {},
-  situacaoContributiva: {},
-  posicaoAtual: {},
-  trabalhadorIndependente: {},
-  execucaoFiscal: {},
-  carreiraContributiva: {},
-  mensagens: {},
-  registosAcessos: {}
-};
+export function generateSnapshot() {
+  const snapshotPath = path.join(DIR, 'seg_social_unified_snapshot.json');
+  let existing = {};
+  if (fs.existsSync(snapshotPath)) {
+    try {
+      existing = JSON.parse(fs.readFileSync(snapshotPath, 'utf-8'));
+    } catch (e) {}
+  }
+
+  const snapshot = {
+    extractedAt: new Date().toISOString(),
+    profile: existing.profile || {},
+    contactos: existing.contactos || {},
+    contaBancaria: existing.contaBancaria || {},
+    situacaoContributiva: existing.situacaoContributiva || {},
+    posicaoAtual: existing.posicaoAtual || {},
+    trabalhadorIndependente: existing.trabalhadorIndependente || {},
+    execucaoFiscal: existing.execucaoFiscal || {},
+    carreiraContributiva: existing.carreiraContributiva || {},
+    mensagens: existing.mensagens || {},
+    registosAcessos: existing.registosAcessos || {}
+  };
 
 // 1. Profile
 try {
@@ -239,12 +250,16 @@ try {
     const pRef = notifPlan.conteudo.match(/Referência:\s*(?:<b>)?\s*([\d\s]+)\s*<\/b>/i) || notifPlan.conteudo.match(/Referência:\s*([\d\s]{9,15})/i);
     const pPrazo = notifPlan.conteudo.match(/até\s*([\d\-]{10})/i);
 
+    const livePosicaoHtml = readFileContent('posicaoAtual.html') || readFileContent('posicao_atual.html');
+    const isZeroLiveDebt = livePosicaoHtml ? (livePosicaoHtml.includes('existem valores para apresentar') && livePosicaoHtml.includes('0,00')) : false;
+
     snapshot.execucaoFiscal = {
       processoPrincipal: pProc ? pProc[1] : null,
       planoNumero: pPlano ? pPlano[1] : null,
-      estado: 'Deferido / Aprovado',
+      estado: isZeroLiveDebt ? 'Liquidado / Regularizado (Saldo 0,00 € na Posição Atual)' : 'Deferido / Aprovado',
       numeroPrestacoes: pPrest ? parseInt(pPrest[1], 10) : null,
-      montanteTotalDivida: pTot ? parseFloat(pTot[1].replace(/\./g, '').replace(',', '.')) : 0,
+      montanteTotalDivida: isZeroLiveDebt ? 0 : (pTot ? parseFloat(pTot[1].replace(/\./g, '').replace(',', '.')) : 0),
+      montanteHistoricoNotificado: pTot ? parseFloat(pTot[1].replace(/\./g, '').replace(',', '.')) : 0,
       quantiaExequenda: pExeq ? parseFloat(pExeq[1].replace(/\./g, '').replace(',', '.')) : 0,
       juros: pJur ? parseFloat(pJur[1].replace(/\./g, '').replace(',', '.')) : 0,
       custas: pCust ? parseFloat(pCust[1].replace(/\./g, '').replace(',', '.')) : 0,
@@ -252,7 +267,8 @@ try {
       entidade: pEnt ? pEnt[1] : null,
       referencia: pRef ? pRef[1].replace(/\s+/g, ' ').trim() : null,
       prazoPrimeiraPrestacao: pPrazo ? pPrazo[1] : null,
-      alertaCritico: 'A falta de pagamento de uma prestação implica a rescisão imediata do plano e penhora de bens (art. 200.º n.º 4 do CPPT).'
+      saldoAtualPortal: isZeroLiveDebt ? 0.00 : null,
+      observacao: isZeroLiveDebt ? 'O portal da Segurança Social Direta (Posição Atual) confirma saldo de 0,00 € em execução fiscal e ausência de valores pendentes em plano.' : 'Plano em curso.'
     };
   }
 } catch (e) {
@@ -308,5 +324,11 @@ try {
   console.error('Error in access logs:', e.message);
 }
 
-fs.writeFileSync(path.join(DIR, 'seg_social_unified_snapshot.json'), JSON.stringify(snapshot, null, 2), 'utf-8');
-console.log('✅ Snapshot unificado atualizado com sucesso em: seg_social_unified_snapshot.json');
+  fs.writeFileSync(path.join(DIR, 'seg_social_unified_snapshot.json'), JSON.stringify(snapshot, null, 2), 'utf-8');
+  console.log('✅ Snapshot unificado atualizado com sucesso em: seg_social_unified_snapshot.json');
+  return snapshot;
+}
+
+if (process.argv[1]?.endsWith('generate_snapshot.mjs')) {
+  generateSnapshot();
+}

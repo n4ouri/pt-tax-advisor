@@ -56,15 +56,16 @@ export function analyzeAutonomoProfile(data) {
                               (data?.at?.regimeSimplificado?.rendimentoServicos ? data.at.regimeSimplificado.rendimentoServicos / 4 * 0.70 : 0);
   
   // Estimate annualized gross based on declared quarter (or input)
-  const annualizedGross = grossIncomeQuarter > 0 ? (grossIncomeQuarter / 0.70) * 4 : (data?.at?.regimeSimplificado?.rendimentoServicos || 0);
-  const monthlyAverageGross = annualizedGross / 12;
+  const rawAnnualized = grossIncomeQuarter > 0 ? (grossIncomeQuarter / 0.70) * 4 : (data?.at?.regimeSimplificado?.rendimentoServicos || 0);
+  const annualizedGross = Math.round(rawAnnualized * 100) / 100;
+  const monthlyAverageGross = Math.round((annualizedGross / 12) * 100) / 100;
 
   findings.metrics = {
-    grossQuarterly: grossIncomeQuarter > 0 ? grossIncomeQuarter / 0.70 : 0,
+    grossQuarterly: grossIncomeQuarter > 0 ? Math.round((grossIncomeQuarter / 0.70) * 100) / 100 : 0,
     grossAnnualEstimated: annualizedGross,
     monthlyAverageGross,
     currentSSMonthly: data?.segSocial?.trabalhadorIndependente?.mensalidadePrevista || 0,
-    currentSSQuarterlyBase: data?.segSocial?.trabalhadorIndependente?.baseIncidenciaMensal || (grossIncomeQuarter > 0 ? grossIncomeQuarter / 3 : 0)
+    currentSSQuarterlyBase: data?.segSocial?.trabalhadorIndependente?.baseIncidenciaMensal || (grossIncomeQuarter > 0 ? Math.round((grossIncomeQuarter / 3) * 100) / 100 : 0)
   };
 
   // =========================================================================

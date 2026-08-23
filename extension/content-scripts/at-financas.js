@@ -1,33 +1,64 @@
 /**
  * Content script for Portal das Finanças (AT) - financas.gov.pt / portaldasfinancas.gov.pt
+ * Enhanced with MutationObserver for SPA Lifecycle, Session Stale Detection & Robust Data Extraction
  */
 
 (function () {
   console.log('[PT-Advisor] AT Content Script initialized on:', window.location.href);
 
-  // Run extraction on load
-  window.addEventListener('DOMContentLoaded', runExtraction);
-  setTimeout(runExtraction, 1500); // Retry in case of SPA hydration
+  let lastExtractionHash = '';
+  let debounceTimer = null;
+
+  // Run extraction on load and observe DOM changes
+  window.addEventListener('DOMContentLoaded', triggerDebouncedExtraction);
+  window.addEventListener('load', triggerDebouncedExtraction);
+
+  // Setup MutationObserver for dynamic SPA navigation
+  const observer = new MutationObserver(() => {
+    triggerDebouncedExtraction();
+  });
+
+  if (document.body) {
+    observer.observe(document.body, { childList: true, subtree: true });
+  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+  }
+
+  function triggerDebouncedExtraction() {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(runExtraction, 400);
+  }
 
   function runExtraction() {
     try {
-      const atData = scrapeATPage();
-      if (atData && Object.keys(atData).length > 0) {
-        chrome.runtime.sendMessage({
-          action: 'SAVE_SNAPSHOT',
-          payload: {
-            source: 'AT',
-            section: detectSection(window.location.href),
-            data: atData
-          }
-        }, (response) => {
-          if (chrome.runtime.lastError) {
-            console.warn('[PT-Advisor] Runtime message error:', chrome.runtime.lastError.message);
-          } else {
-            showFloatingBadge('AT Sincronizada');
-          }
-        });
+      // Check for login expired / invalid application page
+      if (document.title.includes('Aplicação Inexistente') || document.body.innerText.includes('ADC O pedido é inválido')) {
+        return;
       }
+
+      const atData = scrapeATPage();
+      if (!atData || Object.keys(atData).length === 0) return;
+
+      const currentHash = JSON.stringify(atData);
+      if (currentHash === lastExtractionHash) return; // Prevent duplicate work
+      lastExtractionHash = currentHash;
+
+      chrome.runtime.sendMessage({
+        action: 'SAVE_SNAPSHOT',
+        payload: {
+          source: 'AT',
+          section: detectSection(window.location.href),
+          data: atData
+        }
+      }, (response) => {
+        if (chrome.runtime.lastError) {
+          // Extension context might be reloaded
+        } else {
+          showFloatingBadge('AT Sincronizada');
+        }
+      });
     } catch (e) {
       console.error('[PT-Advisor] Error scraping AT page:', e);
     }
@@ -38,6 +69,7 @@
     if (url.includes('/declaracoes') || url.includes('/irs') || url.includes('/iva')) return 'DECLARACOES';
     if (url.includes('/planos') || url.includes('/prestacoes')) return 'PLANOS_PAGAMENTO';
     if (url.includes('/certidoes')) return 'CERTIDOES';
+    if (url.includes('/dadoscadastrais')) return 'DADOS_CADASTRAIS';
     return 'GERAL';
   }
 
@@ -47,10 +79,10 @@
       url: window.location.href
     };
 
-    // 1. Extract NIF and User Name
-    const nifElement = document.querySelector('.user-nif, [id*="nif"], .nif-user, .header-user-info, .auth-user-nif');
     const headerText = document.body.innerText;
-    const nifMatch = headerText.match(/NIF:\s*(\d{9})/i) || headerText.match(/(\d{9})/);
+
+    // 1. Extract NIF and User Name
+    const nifMatch = headerText.match(/NIF:\s*(\d{9})/i) || headerText.match(/Contribuinte:\s*(\d{9})/i) || headerText.match(/\b([123]\d{8})\b/);
     if (nifMatch) {
       data.nif = nifMatch[1];
     }
@@ -63,12 +95,11 @@
     const tables = document.querySelectorAll('table');
     tables.forEach(table => {
       const text = table.innerText.toLowerCase();
-      if (text.includes('processo') || text.includes('quantia') || text.includes('dívida') || text.includes('duc') || text.includes('coima')) {
+      if (text.includes('processo') || text.includes('quantia') || text.includes('dívida') || text.includes('duc') || text.includes('coima') || text.includes('exequenda')) {
         const rows = table.querySelectorAll('tbody tr');
         rows.forEach(tr => {
           const cells = Array.from(tr.querySelectorAll('td')).map(td => td.innerText.trim());
           if (cells.length >= 2) {
-            // Find currency values
             cells.forEach(c => {
               const valMatch = c.match(/([\d\.\,]+)\s*€/);
               if (valMatch) {
@@ -98,15 +129,18 @@
       data.dividas.total = 0;
     } else if (totalDebt > 0) {
       data.situacaoFiscal = 'Com Dívida / Não Regularizada';
+    } else {
+      data.situacaoFiscal = 'Regularizada';
     }
 
     // 3. Extract Declarations (IRS / IVA / IES)
     const declarations = [];
     const declMatches = document.querySelectorAll('.table-declaracoes tbody tr, .declaracao-item, [class*="declaracao"]');
     declMatches.forEach(el => {
-      declarations.push({
-        text: el.innerText.replace(/\s+/g, ' ').trim()
-      });
+      const txt = el.innerText.replace(/\s+/g, ' ').trim();
+      if (txt.length > 5 && !declarations.some(d => d.text === txt)) {
+        declarations.push({ text: txt });
+      }
     });
     if (declarations.length > 0) {
       data.declaracoes = declarations;
@@ -151,7 +185,7 @@
       gap: 6px;
       border: 1px solid #1e293b;
       cursor: pointer;
-      transition: transform 0.2s ease;
+      transition: transform 0.2s ease, opacity 0.3s ease;
     `;
     badge.innerHTML = `<span style="font-size: 14px;">🛡️</span> ${text}`;
     badge.addEventListener('click', () => {
@@ -166,3 +200,4 @@
     }, 4000);
   }
 })();
+
